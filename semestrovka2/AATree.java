@@ -47,19 +47,19 @@ public class AATree {
         else if (value > t.value) {
             t.right = insert(value, t.right);
         }
-        else return t;
 
         t = skew(t);
         t = split(t);
         return t;
     }
     public Node decreaseLevel(Node t){
-        int shouldBe = Math.min(t.left.level, t.right.level) + 1;
-        if (shouldBe < t.level)
-        {
-            t.level = shouldBe;
-            if (shouldBe < t.right.level)
-                t.right.level = shouldBe;
+        if (t.right != null && t.left != null) {
+            int shouldBe = Math.min(t.left.level, t.right.level) + 1;
+            if (shouldBe < t.level) {
+                t.level = shouldBe;
+                if (shouldBe < t.right.level)
+                    t.right.level = shouldBe;
+            }
         }
         return t;
     }
@@ -67,22 +67,13 @@ public class AATree {
         iterationCount = 0;
         return search(root, val);
     }
-    private boolean search(Node r, int val) {
+    private boolean search(Node t, int value) {
         iterationCount++;
-        boolean found = false;
-        while ((r != null) && !found) {
-            int rval = r.value;
-            if (val < rval)
-                r = r.left;
-            else if (val > rval)
-                r = r.right;
-            else {
-                found = true;
-                break;
-            }
-            found = search(r, val);
-        }
-        return found;
+        if (t == null) return false;
+        else if (t.value == value) return true;
+        else if (value > t.value) return search(t.right, value);
+        else if (value < t.value) return search(t.left, value);
+        else return false;
     }
     public void remove(int value) {
         iterationCount = 0;
@@ -92,32 +83,30 @@ public class AATree {
 
     private Node remove(int value, Node t ) {
         iterationCount++;
-        if( t != null ) {
-            Node lastNode = t;
-            Node deletedNode = nullNode;
-            if( value < t.value) t.left = remove( value, t.left );
-            else {
-                deletedNode = t;
-                t.right = remove( value, t.right );
-            }
-            if( t == lastNode ) {
-                if( deletedNode == nullNode || value != deletedNode.value ) return t;
-                deletedNode.value = t.value;
-                t = t.right;
+        if (t == null) return t;
+        else if (value > t.value) t.right = remove(value, t.right);
+        else if (value < t.value) t.left = remove(value, t.left);
+        else {
+            if (isLeaf(t)) return null;
+            else if (t.left == null) {
+                Node l = successor(t);
+                t.right = remove(l.value, t.right);
+                t.value = l.value;
             }
             else {
-                if (t.left.level < t.level - 1 || t.right.level < t.level - 1) {
-                    if (t.right.level > --t.level)
-                        t.right.level = t.level;
-                    t = skew(t);
-                    t.right = skew(t.right);
-                    t.right.right = skew(t.right.right);
-                    t = split(t);
-                    t.right = split(t.right);
-                }
+                Node l = predecessor(t);
+                t.left = remove(l.value, t.left);
+                t.value = l.value;
             }
         }
+        t = decreaseLevel(t);
+        t = skew(t);
+        t.right = skew(t.right);
+        if (t.right != null) t.right.right = skew(t.right.right);
+        t = split(t);
+        t.right = split(t.right);
         return t;
+
     }
 
     public void print(){
@@ -135,6 +124,30 @@ public class AATree {
         if(t.right != null){
             print(t.right, level+1);
         }
+    }
+    public Node predecessor(Node t) {
+        iterationCount++;
+        if (t == null) {
+            return null;
+        } else if (t.left == null) {
+            return t;
+        } else {
+            return predecessor(t.left);
+        }
+    }
+    public Node successor(Node t) {
+        iterationCount++;
+        if (t == null) {
+            return null;
+        } else if (t.right == null) {
+            return t;
+        } else {
+            return predecessor(t.right);
+        }
+    }
+
+    public boolean isLeaf(Node t) {
+        return (t.left == null && t.right == null);
     }
 
 }

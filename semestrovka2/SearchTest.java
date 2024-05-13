@@ -38,7 +38,6 @@ public class SearchTest {
                     long startTime = System.nanoTime();
                     tree.search(numbers[randomIndex]);
                     totalTime += System.nanoTime() - startTime;
-                    System.out.println(tree.iterationCount);
                     totalIterationsCount += tree.iterationCount;
                 }
 
